@@ -4,16 +4,18 @@
       <div  v-for="i in $data.pages" :key="i">
         <div v-if="!toBeDeleted.includes(i)" class="pdf-hover">
           <button v-on:click="hidePage(i)" class="delete">Delete</button>
+          <button v-on:click="rotatePDF(i)" class="rotate">Rotate</button>
           <pdf class="pdf" :src="$data.renderedPdf" :page="i"> </pdf>
         </div>
       </div>
     </div>
+    <button v-on:click="revertHide">Undo Changes</button>
     <button v-on:click="removePages">Save Changes</button>
   </div>
 </template>
 
 <script>
-import { PDFDocument } from 'pdf-lib';
+import { PDFDocument, degrees } from 'pdf-lib';
 
 import pdf from 'vue-pdf';
 
@@ -22,8 +24,8 @@ export default {
   data() {
     return {
       pdf: undefined,
-      renderedPdf: String,
-      pages: Number,
+      renderedPdf: '',
+      pages: 0,
       toBeDeleted: [],
     };
   },
@@ -38,17 +40,46 @@ export default {
   },
   methods: {
     async removePages() {
-      this.toBeDeleted.forEach(index => this.$data.pdf.removePage(index - 1));
+      this.toBeDeleted.forEach(index => this.pdf.removePage(index - 1));
+      console.log(this.pdf.getPageCount());
       this.toBeDeleted = [];
         this.$nextTick(async () => {
           const rawPdf = await this.pdf.save();
           const doc = await PDFDocument.load(rawPdf);
-          this.renderedPdf = rawPdf;
+          this.pdf = doc;
+          this.renderedPdf = await doc.save();
           this.pages = doc.getPageCount();
         });
     },
     hidePage(i) {
-      this.toBeDeleted.push(i);
+      if (this.toBeDeleted.length + 1 !== this.pages ) {
+        this.toBeDeleted.push(i);
+      }
+    },
+    revertHide() {
+      const lastIndex = this.toBeDeleted.length - 1;
+      this.toBeDeleted.splice(lastIndex, 1);
+    },
+    rotatePDF(i) {
+      const page = this.pdf.getPage(i - 1);
+      const currentRotation = page.getRotation().angle;
+      if (currentRotation === 0) {
+        page.setRotation(degrees(90));
+      } else if (currentRotation === 90) {
+        page.setRotation(degrees(180));
+      } else if (currentRotation === 180) {
+        page.setRotation(degrees(270));
+      } else if (currentRotation === 270) {
+        page.setRotation(degrees(0));
+      }
+
+      this.$nextTick(async () => {
+/*        const rawPdf = await this.pdf.save();*/
+/*        const doc = await PDFDocument.load(rawPdf);
+        this.pdf = doc;*/
+        this.renderedPdf = await this.pdf.save();
+/*        this.pages = doc.getPageCount();*/
+      });
     },
   },
   components: {
@@ -81,6 +112,11 @@ export default {
 .delete {
   position: absolute;
   left: 10px;
+  top: 10px;
+}
+.rotate {
+  position: absolute;
+  right: 10px;
   top: 10px;
 }
 </style>
