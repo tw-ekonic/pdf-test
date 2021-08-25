@@ -1,11 +1,14 @@
 <template>
   <div class="pdf-container">
     <div class="pdf-list-container" v-if="$data.pdf">
-      <div class="pdf-hover" v-for="i in $data.pages" :key="i">
-        <button v-on:click="removePage(i)" class="delete">Delete</button>
-        <pdf class="pdf" :src="$data.renderedPdf" :page="i"> </pdf>
+      <div  v-for="i in $data.pages" :key="i">
+        <div v-if="!toBeDeleted.includes(i)" class="pdf-hover">
+          <button v-on:click="hidePage(i)" class="delete">Delete</button>
+          <pdf class="pdf" :src="$data.renderedPdf" :page="i"> </pdf>
+        </div>
       </div>
     </div>
+    <button v-on:click="removePages">Save Changes</button>
   </div>
 </template>
 
@@ -21,6 +24,7 @@ export default {
       pdf: undefined,
       renderedPdf: String,
       pages: Number,
+      toBeDeleted: [],
     };
   },
   async mounted() {
@@ -33,16 +37,18 @@ export default {
     this.pages = doc.getPageCount();
   },
   methods: {
-    async removePage(i) {
-      if (i > 0 && this.$data.pages > i) {
-        this.$data.pdf.removePage(i - 1);
+    async removePages() {
+      this.toBeDeleted.forEach(index => this.$data.pdf.removePage(index - 1));
+      this.toBeDeleted = [];
         this.$nextTick(async () => {
           const rawPdf = await this.pdf.save();
           const doc = await PDFDocument.load(rawPdf);
           this.renderedPdf = rawPdf;
           this.pages = doc.getPageCount();
         });
-      }
+    },
+    hidePage(i) {
+      this.toBeDeleted.push(i);
     },
   },
   components: {
@@ -63,6 +69,10 @@ export default {
 .pdf {
   margin: 40px;
   width: 200px;
+}
+.pdf-hover {
+  height: 100%;
+  display: flex;
 }
 .pdf-hover:hover {
   position: relative;
