@@ -47,6 +47,11 @@ export default {
     const url = 'test.pdf';
     const arrayBuffer = await fetch(url).then((res) => res.arrayBuffer());
     const doc = await PDFDocument.load(arrayBuffer);
+
+    doc.getPages().forEach((page, index) => {
+      this.toBeRotated.set(index, page.getRotation().angle);
+    });
+
     this.pdf = doc;
     this.renderedPdf = await doc.save();
     this.pagesCount = doc.getPageCount();
@@ -56,21 +61,18 @@ export default {
       this.toBeDeleted.forEach((index) => this.pdf.removePage(index - 1));
       this.toBeDeleted = [];
 
-      console.log(this.toBeRotated);
-      this.toBeRotated.forEach((value, key) => {
-        key -= key - 1;
-        console.log(value);
-        console.log(key);
-        const currentRotation = parseInt(
-          this.pdf.getPage(key).getRotation().angle
-        );
-        this.pdf.getPage(key).setRotation(degrees(currentRotation + value));
+      this.toBeRotated.forEach((value, index) => {
+        this.pdf.getPage(index).setRotation(degrees(value));
       });
-      this.toBeRotated = new Map();
 
       this.$nextTick(async () => {
         const rawPdf = await this.pdf.save();
         const doc = await PDFDocument.load(rawPdf);
+        this.toBeRotated = new Map();
+        doc.getPages().forEach((page, index) => {
+          this.toBeRotated.set(index, page);
+        });
+
         this.pdf = doc;
         this.renderedPdf = await doc.save();
         this.pagesCount = doc.getPageCount();
@@ -86,26 +88,19 @@ export default {
       this.toBeDeleted.splice(lastIndex, 1);
     },
     rotateLeft(event, i) {
-      console.log(i);
-      const attribute = 'data-rotation';
       const element = event.target.parentNode.nextSibling.firstChild;
-      const rotation = parseInt(element.getAttribute(attribute));
+      const rotation = this.toBeRotated.get(i);
       const newRotation = (rotation - 90) % 360;
-
-      element.setAttribute(attribute, newRotation);
       element.style.transform = `rotate(${newRotation}deg)`;
 
       this.toBeRotated.set(i, newRotation);
     },
     rotateRight(event, i) {
-      console.log(i);
-      const attribute = 'data-rotation';
       const element = event.target.parentNode.nextSibling.firstChild;
-      const rotation = parseInt(element.getAttribute(attribute));
+      const rotation = this.toBeRotated.get(i);
       const newRotation = (rotation + 90) % 360;
-
-      element.setAttribute(attribute, newRotation);
       element.style.transform = `rotate(${newRotation}deg)`;
+
       this.toBeRotated.set(i, newRotation);
     },
   },
