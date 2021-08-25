@@ -5,8 +5,8 @@
         <div v-if="!toBeDeleted.includes(index)" class="pdf-hover">
           <div class="controls">
             <button v-on:click="hidePage(index)">Delete</button>
-            <button v-on:click="rotateLeft(index)">Rotate left</button>
-            <button v-on:click="rotateRight(index)">
+            <button v-on:click="rotate(index, -90)">Rotate left</button>
+            <button v-on:click="rotate(index, +90)">
               Rotate right
             </button>
           </div>
@@ -95,14 +95,9 @@ export default {
       const lastIndex = this.toBeDeleted.length - 1;
       this.toBeDeleted.splice(lastIndex, 1);
     },
-    rotateLeft(i) {
+    rotate(i, deg) {
       const rotation = this.toBeRotated[i];
-      const newRotation = (rotation - 90) % 360;
-      Vue.set(this.toBeRotated, i, newRotation);
-    },
-    rotateRight(i) {
-      const rotation = this.toBeRotated[i];
-      const newRotation = (rotation + 90) % 360;
+      const newRotation = (rotation + deg) % 360;
       Vue.set(this.toBeRotated, i, newRotation);
     },
   },
