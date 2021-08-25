@@ -1,21 +1,21 @@
 <template>
   <div class="pdf-container">
     <div class="pdf-list-container" v-if="$data.pagesCount">
-      <div v-for="index in $data.pagesCount" :key="index">
+      <div v-for="(n, index) in $data.pagesCount" :key="index">
         <div v-if="!toBeDeleted.includes(index)" class="pdf-hover">
           <div class="controls">
             <button v-on:click="hidePage(index)">Delete</button>
-            <button v-on:click="rotateRight($event, index)">
+            <button v-on:click="rotateLeft(index)">Rotate left</button>
+            <button v-on:click="rotateRight(index)">
               Rotate right
             </button>
-            <button v-on:click="rotateLeft($event, index)">Rotate left</button>
           </div>
           <div>
             <pdf
               class="pdf"
               :src="$data.renderedPdf"
-              :page="index"
-              data-rotation="0"
+              :page="n"
+              :style="{ transform: `rotate(${toBeRotated[index]}deg)` }"
             ></pdf>
           </div>
           <div>Page: {{ index }}</div>
@@ -31,6 +31,7 @@
 import { PDFDocument, degrees } from 'pdf-lib';
 
 import pdf from 'vue-pdf';
+import Vue from 'vue';
 
 export default {
   name: 'HelloWorld',
@@ -40,7 +41,7 @@ export default {
       renderedPdf: Uint8Array,
       pagesCount: Number,
       toBeDeleted: [],
-      toBeRotated: new Map(),
+      toBeRotated: [],
     };
   },
   async mounted() {
@@ -48,8 +49,8 @@ export default {
     const arrayBuffer = await fetch(url).then((res) => res.arrayBuffer());
     const doc = await PDFDocument.load(arrayBuffer);
 
-    doc.getPages().forEach((page, index) => {
-      this.toBeRotated.set(index, page.getRotation().angle);
+    doc.getPages().forEach((page) => {
+      this.toBeRotated.push(page.getRotation().angle);
     });
 
     this.pdf = doc;
@@ -58,19 +59,26 @@ export default {
   },
   methods: {
     async saveChanges() {
-      this.toBeDeleted.forEach((index) => this.pdf.removePage(index - 1));
+      this.toBeDeleted.forEach((index) => this.pdf.removePage(index));
       this.toBeDeleted = [];
 
       this.toBeRotated.forEach((value, index) => {
-        this.pdf.getPage(index).setRotation(degrees(value));
+        const currentRotation = parseInt(
+          this.pdf.getPage(index).getRotation().angle
+        );
+
+        this.pdf
+          .getPage(index)
+          .setRotation(degrees(currentRotation + parseInt(value)));
       });
+      this.toBeRotated = [];
 
       this.$nextTick(async () => {
         const rawPdf = await this.pdf.save();
         const doc = await PDFDocument.load(rawPdf);
-        this.toBeRotated = new Map();
-        doc.getPages().forEach((page, index) => {
-          this.toBeRotated.set(index, page);
+
+        doc.getPages().forEach((_, index) => {
+          Vue.set(this.toBeRotated, index, 0);
         });
 
         this.pdf = doc;
@@ -87,21 +95,15 @@ export default {
       const lastIndex = this.toBeDeleted.length - 1;
       this.toBeDeleted.splice(lastIndex, 1);
     },
-    rotateLeft(event, i) {
-      const element = event.target.parentNode.nextSibling.firstChild;
-      const rotation = this.toBeRotated.get(i);
+    rotateLeft(i) {
+      const rotation = this.toBeRotated[i];
       const newRotation = (rotation - 90) % 360;
-      element.style.transform = `rotate(${newRotation}deg)`;
-
-      this.toBeRotated.set(i, newRotation);
+      Vue.set(this.toBeRotated, i, newRotation);
     },
-    rotateRight(event, i) {
-      const element = event.target.parentNode.nextSibling.firstChild;
-      const rotation = this.toBeRotated.get(i);
+    rotateRight(i) {
+      const rotation = this.toBeRotated[i];
       const newRotation = (rotation + 90) % 360;
-      element.style.transform = `rotate(${newRotation}deg)`;
-
-      this.toBeRotated.set(i, newRotation);
+      Vue.set(this.toBeRotated, i, newRotation);
     },
   },
   components: {
