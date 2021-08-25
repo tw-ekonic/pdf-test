@@ -1,11 +1,15 @@
 <template>
   <div class="pdf-container">
     <div class="pdf-list-container" v-if="$data.pdf">
-      <div  v-for="i in $data.pages" :key="i">
+      <div v-for="i in $data.pages" :key="i">
         <div v-if="!toBeDeleted.includes(i)" class="pdf-hover">
-          <button v-on:click="hidePage(i)" class="delete">Delete</button>
-          <button v-on:click="rotatePDF(i)" class="rotate">Rotate</button>
-          <pdf class="pdf" :src="$data.renderedPdf" :page="i"> </pdf>
+          <div class="controls">
+            <button v-on:click="hidePage(i)">Delete</button>
+            <button v-on:click="rotatePDF(i)">Rotate</button>
+          </div>
+          <div>
+            <pdf class="pdf" :src="$data.renderedPdf" :page="i"> </pdf>
+          </div>
         </div>
       </div>
     </div>
@@ -40,19 +44,19 @@ export default {
   },
   methods: {
     async removePages() {
-      this.toBeDeleted.forEach(index => this.pdf.removePage(index - 1));
+      this.toBeDeleted.forEach((index) => this.pdf.removePage(index - 1));
       console.log(this.pdf.getPageCount());
       this.toBeDeleted = [];
-        this.$nextTick(async () => {
-          const rawPdf = await this.pdf.save();
-          const doc = await PDFDocument.load(rawPdf);
-          this.pdf = doc;
-          this.renderedPdf = await doc.save();
-          this.pages = doc.getPageCount();
-        });
+      this.$nextTick(async () => {
+        const rawPdf = await this.pdf.save();
+        const doc = await PDFDocument.load(rawPdf);
+        this.pdf = doc;
+        this.renderedPdf = await doc.save();
+        this.pages = doc.getPageCount();
+      });
     },
     hidePage(i) {
-      if (this.toBeDeleted.length + 1 !== this.pages ) {
+      if (this.toBeDeleted.length + 1 !== this.pages) {
         this.toBeDeleted.push(i);
       }
     },
@@ -74,11 +78,11 @@ export default {
       }
 
       this.$nextTick(async () => {
-/*        const rawPdf = await this.pdf.save();*/
-/*        const doc = await PDFDocument.load(rawPdf);
+        /*        const rawPdf = await this.pdf.save();*/
+        /*        const doc = await PDFDocument.load(rawPdf);
         this.pdf = doc;*/
         this.renderedPdf = await this.pdf.save();
-/*        this.pages = doc.getPageCount();*/
+        /*        this.pages = doc.getPageCount();*/
       });
     },
   },
@@ -97,26 +101,29 @@ export default {
   width: 100%;
   justify-content: center;
 }
+
 .pdf {
   margin: 40px;
   width: 200px;
 }
+
 .pdf-hover {
   height: 100%;
   display: flex;
+  flex-direction: column;
 }
+
+.pdf-hover:hover .controls {
+  display: flex;
+}
+
 .pdf-hover:hover {
   position: relative;
   background: #ebebeb;
 }
-.delete {
+
+.controls {
+  display: none;
   position: absolute;
-  left: 10px;
-  top: 10px;
-}
-.rotate {
-  position: absolute;
-  right: 10px;
-  top: 10px;
 }
 </style>
