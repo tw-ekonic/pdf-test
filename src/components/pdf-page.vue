@@ -21,10 +21,18 @@
 
 <script>
 import pdf from 'vue-pdf';
+import Vue from "vue";
 
 export default {
   name: 'pdfPage',
-  props: ['toBeDeleted', 'index', 'hidePage', 'rotate', 'toBeRotated', 'renderedPdf', 'n'],
+  props: ['toBeDeleted', 'index', 'hidePage', 'toBeRotated', 'renderedPdf', 'n'],
+  methods: {
+    rotate(i, deg) {
+      const rotation = this.toBeRotated[i];
+      const newRotation = (rotation + deg) % 360;
+      Vue.set(this.toBeRotated, i, newRotation);
+    },
+  },
   components: {
     pdf,
   }

@@ -6,7 +6,6 @@
                 :toBeDeleted="toBeDeleted"
                 :toBeRotated="toBeRotated"
                 :renderedPdf="$data.renderedPdf"
-                :rotate="rotate"
                 v-for="(n, index) in $data.pagesCount"
                 :n="n"
                 :key="index"/>
@@ -83,11 +82,6 @@ export default {
     revertHide() {
       const lastIndex = this.toBeDeleted.length - 1;
       this.toBeDeleted.splice(lastIndex, 1);
-    },
-    rotate(i, deg) {
-      const rotation = this.toBeRotated[i];
-      const newRotation = (rotation + deg) % 360;
-      Vue.set(this.toBeRotated, i, newRotation);
     },
   },
   components: {
