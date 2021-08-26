@@ -1,26 +1,15 @@
 <template>
   <div class="pdf-container">
     <div class="pdf-list-container" v-if="$data.pagesCount">
-      <div v-for="(n, index) in $data.pagesCount" :key="index">
-        <div v-if="!toBeDeleted.includes(index)" class="pdf-hover">
-          <div class="controls">
-            <button v-on:click="hidePage(index)">Delete</button>
-            <button v-on:click="rotate(index, -90)">Rotate left</button>
-            <button v-on:click="rotate(index, +90)">
-              Rotate right
-            </button>
-          </div>
-          <div>
-            <pdf
-              class="pdf"
-              :src="$data.renderedPdf"
-              :page="n"
-              :style="{ transform: `rotate(${toBeRotated[index]}deg)` }"
-            ></pdf>
-          </div>
-          <div>Page: {{ index }}</div>
-        </div>
-      </div>
+      <pdf-page :hidePage="hidePage"
+                :index="index"
+                :toBeDeleted="toBeDeleted"
+                :toBeRotated="toBeRotated"
+                :renderedPdf="$data.renderedPdf"
+                :rotate="rotate"
+                v-for="(n, index) in $data.pagesCount"
+                :n="n"
+                :key="index"/>
     </div>
     <button v-on:click="revertHide">Undo Changes</button>
     <button v-on:click="saveChanges">Save Changes</button>
@@ -30,7 +19,7 @@
 <script>
 import { PDFDocument, degrees } from 'pdf-lib';
 
-import pdf from 'vue-pdf';
+import pdfPage from './pdf-page'
 import Vue from 'vue';
 
 export default {
@@ -102,7 +91,7 @@ export default {
     },
   },
   components: {
-    pdf,
+    pdfPage
   },
 };
 </script>
@@ -115,30 +104,5 @@ export default {
   flex-wrap: wrap;
   width: 100%;
   justify-content: center;
-}
-
-.pdf {
-  margin: 40px;
-  width: 200px;
-}
-
-.pdf-hover {
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-}
-
-.pdf-hover:hover .controls {
-  display: flex;
-}
-
-.pdf-hover:hover {
-  position: relative;
-  background: #ebebeb;
-}
-
-.controls {
-  display: none;
-  position: absolute;
 }
 </style>
