@@ -1,16 +1,16 @@
 <template>
   <div id="app">
-    <HelloWorld/>
+    <pdf-container/>
   </div>
 </template>
 
 <script>
-import HelloWorld from './components/HelloWorld.vue'
+import pdfContainer from './components/pdf-container.vue'
 
 export default {
   name: 'App',
   components: {
-    HelloWorld,
+    pdfContainer,
   },
 }
 </script>

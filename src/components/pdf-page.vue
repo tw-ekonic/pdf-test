@@ -15,7 +15,7 @@
             :style="{ transform: `rotate(${toBeRotated[index]}deg)` }"
         ></pdf>
       </div>
-      <div>Page: {{ index }}</div>
+      <div>Page: {{ index + 1 }}</div>
     </div>
 </template>
 

@@ -22,7 +22,7 @@ import pdfPage from './pdf-page'
 import Vue from 'vue';
 
 export default {
-  name: 'HelloWorld',
+  name: 'pdfContainer',
   data() {
     return {
       pdf: PDFDocument,
