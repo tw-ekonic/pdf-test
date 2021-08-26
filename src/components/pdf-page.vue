@@ -11,7 +11,7 @@
         <pdf
             class="pdf"
             :src="renderedPdf"
-            :page="n"
+            :page="page"
             :style="{ transform: `rotate(${toBeRotated[index]}deg)` }"
         ></pdf>
       </div>
@@ -25,12 +25,13 @@ import Vue from "vue";
 
 export default {
   name: 'pdfPage',
-  props: ['toBeDeleted', 'index', 'hidePage', 'toBeRotated', 'renderedPdf', 'n'],
+  props: ['toBeDeleted', 'index', 'hidePage', 'toBeRotated', 'renderedPdf', 'page'],
   methods: {
     rotate(i, deg) {
       const rotation = this.toBeRotated[i];
       const newRotation = (rotation + deg) % 360;
       Vue.set(this.toBeRotated, i, newRotation);
+      console.log(this.toBeRotated);
     },
   },
   components: {
@@ -42,8 +43,8 @@ export default {
 <style scoped>
 
 .pdf {
-  margin: 40px;
-  width: 200px;
+  margin: 60px;
+  width: 150px;
 }
 
 .pdf-hover {

@@ -6,11 +6,11 @@
                 :toBeDeleted="toBeDeleted"
                 :toBeRotated="toBeRotated"
                 :renderedPdf="$data.renderedPdf"
-                v-for="(n, index) in $data.pagesCount"
-                :n="n"
+                v-for="(page, index) in $data.pagesCount"
+                :page="page"
                 :key="index"/>
     </div>
-    <button v-on:click="revertHide">Undo Changes</button>
+    <button v-on:click="revertHide">Undo Delete</button>
     <button v-on:click="saveChanges">Save Changes</button>
   </div>
 </template>
